@@ -1,0 +1,17 @@
+.DS_Store
+**/node_modules/
+**/.expo/
+**/dist/
+**/web-build/
+**/android/
+**/ios/
+**/.pio/
+**/.vscode/
+**/coverage/
+**/.codex-build/
+**/.codex-finalizer/
+**/*.tsbuildinfo
+**/.env*.local
+**/*.pem
+device-firmware/include/crew_config.h
+device-firmware/include/device_config.h
