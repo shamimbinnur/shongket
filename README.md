@@ -12,14 +12,14 @@ The handhelds can pass a new message onward for up to three hops. This helps a s
 
 ## Start here
 
-| If you want to… | Read |
-| --- | --- |
-| Review the complete project | [Project report](submission/Shongket-Project-Report.pdf) |
-| Present the project | [Presentation slides](submission/Shongket-Presentation.pptx) |
-| Understand the idea in a few minutes | [How Shongket works](docs/how-it-works.md) |
-| Explore the phone experience | [Mobile app overview](docs/mobile-app.md) |
-| Explore the handheld | [Device firmware overview](docs/device-firmware.md) |
-| Run the software | [Mobile setup](mobile-app/README.md) and [firmware setup](device-firmware/README.md) |
+| If you want to…                      | Read                                                                                 |
+| ------------------------------------ | ------------------------------------------------------------------------------------ |
+| Review the complete project          | [Project report](submission/Shongket-Project-Report.pdf)                             |
+| Present the project                  | [Presentation slides](submission/Shongket-Presentation.pptx)                         |
+| Understand the idea in a few minutes | [How Shongket works](docs/how-it-works.md)                                           |
+| Explore the phone experience         | [Mobile app overview](docs/mobile-app.md)                                            |
+| Explore the handheld                 | [Device firmware overview](docs/device-firmware.md)                                  |
+| Run the software                     | [Mobile setup](mobile-app/README.md) and [firmware setup](device-firmware/README.md) |
 
 ## What it currently provides
 
@@ -35,6 +35,5 @@ Shongket is a prototype. The code and automated tests document its intended beha
 - [`device-firmware/`](device-firmware/) — ESP32 handheld code and detailed radio/Bluetooth references.
 - [`mobile-app/`](mobile-app/) — Expo phone companion and app setup.
 - [`docs/`](docs/) — short, nontechnical explanations.
-- [`submission/`](submission/) — professor-facing report and slides.
 
 The report and slides use the Shongket identity: Signal Orange `#F26A2E`, Warm White `#F5F3EE`, and Ink `#171717`.

@@ -19,6 +19,23 @@ namespace {
 BleApi *activeApi = nullptr;
 portMUX_TYPE requestMux = portMUX_INITIALIZER_UNLOCKED;
 
+void onGapEvent(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param) {
+  if (param == nullptr) return;
+  switch (event) {
+    case ESP_GAP_BLE_ADV_DATA_RAW_SET_COMPLETE_EVT:
+      Serial.printf("[BLE] advertisement data status=%d\n", param->adv_data_raw_cmpl.status);
+      break;
+    case ESP_GAP_BLE_SCAN_RSP_DATA_RAW_SET_COMPLETE_EVT:
+      Serial.printf("[BLE] scan response status=%d\n", param->scan_rsp_data_raw_cmpl.status);
+      break;
+    case ESP_GAP_BLE_ADV_START_COMPLETE_EVT:
+      Serial.printf("[BLE] advertising start status=%d\n", param->adv_start_cmpl.status);
+      break;
+    default:
+      break;
+  }
+}
+
 bool reached(uint32_t now, uint32_t deadline) {
   return static_cast<int32_t>(now - deadline) >= 0;
 }
@@ -95,6 +112,7 @@ bool BleApi::begin(const char *advertisedName, RequestHandler *handler) {
   handler_ = handler;
   activeApi = this;
   BLEDevice::init(advertisedName);
+  BLEDevice::setCustomGapHandler(onGapEvent);
   BLEDevice::setMTU(247);
   BLEDevice::setEncryptionLevel(ESP_BLE_SEC_ENCRYPT_MITM);
   BLEDevice::setSecurityCallbacks(&securityCallbacks);
@@ -125,8 +143,16 @@ bool BleApi::begin(const char *advertisedName, RequestHandler *handler) {
   service->start();
 
   BLEAdvertising *advertising = BLEDevice::getAdvertising();
-  advertising->addServiceUUID(SERVICE_UUID);
-  advertising->setScanResponse(true);
+  // A 128-bit service UUID and the CL3 name do not fit in one BLE packet.
+  // Keep the name in the primary advertisement so discovery does not depend
+  // on a scan response; place the UUID in the separate scan response.
+  BLEAdvertisementData advertisementData;
+  advertisementData.setFlags(ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT);
+  advertisementData.setName(advertisedName);
+  advertising->setAdvertisementData(advertisementData);
+  BLEAdvertisementData scanResponseData;
+  scanResponseData.setCompleteServices(BLEUUID(SERVICE_UUID));
+  advertising->setScanResponseData(scanResponseData);
   advertising->setMinPreferred(0x06);
   advertising->setMinPreferred(0x12);
   server_ = server;

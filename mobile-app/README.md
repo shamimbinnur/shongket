@@ -28,10 +28,10 @@ Then start Metro with `npm start` if the run command did not. Rebuild native cod
 
 ## Pairing
 
-1. On the handheld: `5 Status` → `A Phone API` → `A Pair`.
+1. On the handheld: `4 Bluetooth` → `Pair new phone` → press `D`.
 2. Shongket scans for 60 seconds for `CL3-…`.
 3. Connect and enter the six-digit passkey shown on the TFT (never Serial).
-4. Only one bonded phone is accepted. To replace this phone, press `C` twice within five seconds on the Phone API screen, then pair again.
+4. Only one bonded phone is accepted. To replace this phone, select `Forget trusted phone` on the Bluetooth screen and press `D` twice within five seconds, then pair again.
 
 The OS stores the BLE bond. Shongket stores only the last device id in SecureStore. Message bodies stay in RAM and are not copied to cloud logs.
 

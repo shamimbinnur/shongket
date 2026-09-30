@@ -325,7 +325,7 @@ export function Lc3SessionProvider({ children }: { children: ReactNode }) {
     }
     const allowed = await requestBlePermissions();
     if (!allowed) {
-      patch({ error: 'Bluetooth permission was denied.' });
+      patch({ error: 'Allow Nearby devices and Location permissions to scan for the handheld.' });
       return;
     }
     try {
@@ -339,13 +339,14 @@ export function Lc3SessionProvider({ children }: { children: ReactNode }) {
       connection: 'scanning',
       error: null,
       discovered: [],
-      hint: 'Scanning for CL3 handhelds. Open pairing on the radio if it is not already bonded.',
+      hint: 'Scanning for CL3 handhelds. On the radio, open 4 Bluetooth → Pair new phone and press D.',
     });
     const seen = new Map<string, DiscoveredHandheld>();
     const stopNative = startNativeScan(
       (id, name, rssi) => {
         const parsed = parseAdvertisedName(name);
         if (!parsed) return;
+        if (seen.has(id)) return;
         seen.set(id, {
           id,
           name: name ?? `CL3-${parsed.address}-${parsed.nodeName}`,
@@ -354,7 +355,19 @@ export function Lc3SessionProvider({ children }: { children: ReactNode }) {
         });
         patch({ discovered: [...seen.values()] });
       },
-      (code) => lc3Log('scan', { error: String(code) }),
+      (code) => {
+        lc3Log('scan', { error: String(code) });
+        stopNativeScan();
+        const message = code === 102
+          ? 'Bluetooth turned off during the scan. Turn it on and try again.'
+          : code === 601
+            ? 'Location is off. Turn on the phone’s Location switch and try again.'
+            : `Bluetooth scan failed (${String(code)}). Check Bluetooth and Location settings, then try again.`;
+        patch({
+          connection: 'idle',
+          error: message,
+        });
+      },
     );
     const timer = setTimeout(() => {
       stopNative();
@@ -366,7 +379,7 @@ export function Lc3SessionProvider({ children }: { children: ReactNode }) {
               connection: 'idle',
               hint: prev.discovered.length
                 ? null
-                : 'No CL3 handheld found. Open 5 Status → A Phone API → A Pair.',
+                : 'No CL3 handheld found. Open 4 Bluetooth → Pair new phone, press D, and retry within 60 seconds.',
             }
           : prev,
       );

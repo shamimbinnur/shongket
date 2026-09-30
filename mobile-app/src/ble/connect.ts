@@ -55,7 +55,7 @@ export function startNativeScan(
   onError: (code: string | number) => void,
 ): () => void {
   const ble = getBleManager();
-  ble.startDeviceScan(null, { allowDuplicates: false }, (error, device) => {
+  ble.startDeviceScan(null, { allowDuplicates: true }, (error, device) => {
     if (error) {
       onError(error.errorCode);
       return;

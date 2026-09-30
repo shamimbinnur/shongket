@@ -3,7 +3,6 @@
 #include "logo_bitmap.h"
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include <Keypad.h>
 #include <LoRa.h>
 #include <SPI.h>
 #include <TinyGPSPlus.h>
@@ -46,8 +45,9 @@ constexpr uint8_t LORA_CODING_RATE_DENOMINATOR = 5;
 constexpr uint8_t GPS_RX_PIN = 34, GPS_TX_PIN = 17, BUZZER_PIN = 21;
 constexpr uint32_t GPS_BAUD = 9600, GPS_STALE_MS = 10000UL;
 constexpr byte KEYPAD_ROWS = 4, KEYPAD_COLS = 4;
-byte rowPins[KEYPAD_ROWS] = {32, 33, 25, 26};
-byte columnPins[KEYPAD_COLS] = {27, 14, 12, 13};
+// This keypad's signals run in reverse order across the eight wired pads.
+byte rowPins[KEYPAD_ROWS] = {26, 25, 33, 32};
+byte columnPins[KEYPAD_COLS] = {13, 12, 14, 27};
 char keyMap[KEYPAD_ROWS][KEYPAD_COLS] = {
     {'1', '2', '3', 'A'}, {'4', '5', '6', 'B'},
     {'7', '8', '9', 'C'}, {'*', '0', '#', 'D'}};
@@ -58,8 +58,6 @@ constexpr uint32_t PRESENCE_MIN_MS = 27000UL, PRESENCE_MAX_MS = 33000UL;
 Adafruit_ST7789 tft(TFT_CS_PIN, TFT_DC_PIN, TFT_RST_PIN);
 HardwareSerial gpsSerial(2);
 TinyGPSPlus gps;
-Keypad keypad(makeKeymap(keyMap), rowPins, columnPins, KEYPAD_ROWS,
-              KEYPAD_COLS);
 
 using ui::Screen;
 
@@ -1297,8 +1295,46 @@ void executeOption(uint32_t now) {
   }
 }
 
+char readKeypad(uint32_t now) {
+  // Drive rows and read columns in the direction verified by the raw wiring
+  // probe. The Keypad library drives columns, which decoded A/B/C as A on
+  // this particular module.
+  for (byte row = 0; row < KEYPAD_ROWS; ++row)
+    pinMode(rowPins[row], INPUT_PULLUP);
+  for (byte col = 0; col < KEYPAD_COLS; ++col)
+    pinMode(columnPins[col], INPUT_PULLUP);
+
+  char detected = 0;
+  for (byte row = 0; row < KEYPAD_ROWS; ++row) {
+    pinMode(rowPins[row], OUTPUT);
+    digitalWrite(rowPins[row], LOW);
+    delayMicroseconds(100);
+    for (byte col = 0; col < KEYPAD_COLS; ++col) {
+      if (digitalRead(columnPins[col]) == LOW && !detected)
+        detected = keyMap[row][col];
+    }
+    pinMode(rowPins[row], INPUT_PULLUP);
+  }
+
+  static char candidate = 0;
+  static uint32_t changedAt = 0;
+  static bool armed = true;
+  if (detected != candidate) {
+    candidate = detected;
+    changedAt = now;
+  }
+  if (now - changedAt < 30) return 0;
+  if (!candidate) {
+    armed = true;
+    return 0;
+  }
+  if (!armed) return 0;
+  armed = false;
+  return candidate;
+}
+
 void handleKeypad(uint32_t now) {
-  const char key = keypad.getKey(); if (key == NO_KEY) return;
+  const char key = readKeypad(now); if (!key) return;
 
   // Composition deliberately keeps the proven multi-tap control mapping.
   if (currentScreen == Screen::Compose) {

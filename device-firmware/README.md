@@ -59,9 +59,13 @@ and disables sending from a locally conflicted address.
 | ST7789 | CS / DC / RST | 15 / 2 / 4 |
 | SX1278 | NSS / RST / DIO0 | 5 / 16 / 22 |
 | GPS | GPS TX to RX / GPS RX to TX | 34 / 17 |
-| Keypad rows | R1 / R2 / R3 / R4 | 32 / 33 / 25 / 26 |
-| Keypad columns | C1 / C2 / C3 / C4 | 27 / 14 / 12 / 13 |
+| Keypad rows | R1 / R2 / R3 / R4 | 26 / 25 / 33 / 32 |
+| Keypad columns | C1 / C2 / C3 / C4 | 13 / 12 / 14 / 27 |
 | Active buzzer | Signal | 21 |
+
+With the keypad facing up, its eight wired pads run
+white, black, brown, red, orange, yellow, green, blue from left to right.
+R1–R4 are red, brown, black, white; C1–C4 are blue, green, yellow, orange.
 
 The display uses a 320x240 landscape layout at rotation 1. The radio uses 433 MHz, sync word
 `0x4A`, SF9, 125 kHz bandwidth, coding rate 4/5, and payload CRC. UART2 GPS is
